@@ -1,0 +1,6 @@
+/draw/*
+/work_dirs/*
+/data/*
+/.eggs/*
+/build/*
+*.pyc
