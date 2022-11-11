@@ -31,6 +31,7 @@ model = dict(
         roi_layer=dict(type='RoIAlign', out_size=7, sample_num=2),
         out_channels=256,
         featmap_strides=[4, 8, 16, 32]),
+        
     bbox_head=dict(
         type='SharedFCBBoxHead',
         num_fcs=2,
@@ -43,7 +44,9 @@ model = dict(
         reg_class_agnostic=False,
         loss_cls=dict(
             type='ACSL', score_thr=0.7),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)))
+        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
+
+)
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(

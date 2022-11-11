@@ -216,6 +216,7 @@ class TwoStageDetector(BaseDetector, RPNTestMixin, BBoxTestMixin,
             # TODO: a more flexible way to decide which feature maps to use
             bbox_feats = self.bbox_roi_extractor(
                 x[:self.bbox_roi_extractor.num_inputs], rois)
+            # 目前没有都是None
             if self.with_shared_head:
                 bbox_feats = self.shared_head(bbox_feats)
             cls_score, bbox_pred = self.bbox_head(bbox_feats)
