@@ -63,27 +63,18 @@ class LvisDataset(CocoDataset):
                 valid_inds.append(i)
         return valid_inds
 
-    def getCatIds(self, catNms=[], supNms=[], catIds=[]):
-        """
-        filtering parameters. default skips that filter.
-        :param catNms (str array)  : get cats for given cat names
-        :param supNms (str array)  : get cats for given supercategory names
-        :param catIds (int array)  : get cats for given cat ids
-        :return: ids (int array)   : integer array of cat ids
-        """
-        catNms = catNms if _isArrayLike(catNms) else [catNms]
-        supNms = supNms if _isArrayLike(supNms) else [supNms]
-        catIds = catIds if _isArrayLike(catIds) else [catIds]
 
-        if len(catNms) == len(supNms) == len(catIds) == 0:
-            cats = self.lvis.dataset['categories']
-        else:
-            cats = self.lvis.dataset['categories']
-            cats = cats if len(catNms) == 0 else [cat for cat in cats if cat['name']          in catNms]
-            cats = cats if len(supNms) == 0 else [cat for cat in cats if cat['supercategory'] in supNms]
-            cats = cats if len(catIds) == 0 else [cat for cat in cats if cat['id']            in catIds]
-        ids = [cat['id'] for cat in cats]
-        return ids
+    def get_cat_ids(self, idx):
+        """Get COCO category ids by index.
 
-    def get_cat_ids(self, cat_names=[], sup_names=[], cat_ids=[]):
-        return self.getCatIds(cat_names, sup_names, cat_ids)
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            list[int]: All categories in the image of specified index.
+        """
+
+        img_id = self.img_infos[idx]['id']
+        ann_ids = self.lvis.get_ann_ids(img_ids=[img_id])
+        ann_info = self.lvis.load_anns(ann_ids)
+        return [ann['category_id'] for ann in ann_info]

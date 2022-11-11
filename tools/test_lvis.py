@@ -160,7 +160,6 @@ def reweight_cls(model, tauuu):
 
 def main():
     args = parse_args()
-
     assert args.out or args.show or args.json_out, \
         ('Please specify at least one operation (save or show the results) '
          'with the argument "--out" or "--show" or "--json_out"')
@@ -229,26 +228,41 @@ def main():
                 lvis_eval(result_file, eval_types, dataset.lvis)
             else:
                 if not isinstance(outputs[0], dict):
-                    result_files = results2json(dataset, outputs, args.out)
-                    lvis_eval(result_files, eval_types, dataset.lvis)
+                    if cfg.data.test.type == 'ClassBalancedDataset':
+                        result_files = results2json(dataset.dataset, outputs, args.out)
+                        lvis_eval(result_files, eval_types, dataset.dataset.lvis)
+                    else:
+                        result_files = results2json(dataset, outputs, args.out)
+                        lvis_eval(result_files, eval_types, dataset.lvis)    
                 else:
                     for name in outputs[0]:
                         print('\nEvaluating {}'.format(name))
                         outputs_ = [out[name] for out in outputs]
                         result_file = args.out + '.{}'.format(name)
-                        result_files = results2json(dataset, outputs_,
-                                                    result_file)
-                        lvis_eval(result_files, eval_types, dataset.lvis)
+
+                        if cfg.data.test.type == 'ClassBalancedDataset':
+                            result_files = results2json(dataset.dataset, outputs_, result_file)
+                            lvis_eval(result_files, eval_types, dataset.dataset.lvis)
+                        else:
+                            result_files = results2json(dataset, outputs_, result_file)
+                            lvis_eval(result_files, eval_types, dataset.lvis)
+
 
     # Save predictions in the COCO json format
     if args.json_out and rank == 0:
         if not isinstance(outputs[0], dict):
-            results2json(dataset, outputs, args.json_out)
+            if cfg.data.test.type == 'ClassBalancedDataset':
+                results2json(dataset.dataset, outputs, args.json_out)
+            else:
+                results2json(dataset, outputs, args.json_out)
         else:
             for name in outputs[0]:
                 outputs_ = [out[name] for out in outputs]
                 result_file = args.json_out + '.{}'.format(name)
-                results2json(dataset, outputs_, result_file)
+                if cfg.data.test.type == 'ClassBalancedDataset':
+                    results2json(dataset.dataset, outputs_, result_file)
+                else:
+                    results2json(dataset, outputs_, result_file)
 
 
 if __name__ == '__main__':
