@@ -229,7 +229,7 @@ def main():
             else:
                 if not isinstance(outputs[0], dict):
                     if cfg.data.test.type == 'ClassBalancedDataset':
-                        result_files = results2json(dataset.dataset, outputs, args.out)
+                        result_files = results2json(dataset, outputs, args.out)
                         lvis_eval(result_files, eval_types, dataset.dataset.lvis)
                     else:
                         result_files = results2json(dataset, outputs, args.out)

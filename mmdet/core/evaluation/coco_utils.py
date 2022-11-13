@@ -131,11 +131,11 @@ def proposal2json(dataset, results):
             json_results.append(data)
     return json_results
 
-
-def det2json(dataset, results):
+# for datawarper
+def det2json(dataset, results): 
     json_results = []
     for idx in range(len(dataset)):
-        img_id = dataset.img_ids[idx]
+        img_id = dataset.dataset.img_ids[dataset.repeat_indices[idx]]
         result = results[idx]
         for label in range(len(result)):
             bboxes = result[label]
@@ -144,9 +144,26 @@ def det2json(dataset, results):
                 data['image_id'] = img_id
                 data['bbox'] = xyxy2xywh(bboxes[i])
                 data['score'] = float(bboxes[i][4])
-                data['category_id'] = dataset.cat_ids[label]
+                data['category_id'] = dataset.dataset.cat_ids[label]
                 json_results.append(data)
     return json_results
+
+# for original
+# def det2json(dataset, results):
+#     json_results = []
+#     for idx in range(len(dataset)):
+#         img_id = dataset.img_ids[idx]
+#         result = results[idx]
+#         for label in range(len(result)):
+#             bboxes = result[label]
+#             for i in range(bboxes.shape[0]):
+#                 data = dict()
+#                 data['image_id'] = img_id
+#                 data['bbox'] = xyxy2xywh(bboxes[i])
+#                 data['score'] = float(bboxes[i][4])
+#                 data['category_id'] = dataset.cat_ids[label]
+#                 json_results.append(data)
+#     return json_results
 
 
 def segm2json(dataset, results):

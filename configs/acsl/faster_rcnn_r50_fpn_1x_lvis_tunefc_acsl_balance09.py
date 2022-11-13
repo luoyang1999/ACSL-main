@@ -163,6 +163,7 @@ data = dict(
             type=dataset_type,
             ann_file=data_root + 'lvis_v0.5_val.json',
             img_prefix=data_root + 'val2017/',
+            test_mode = 'True',
             pipeline=test_pipeline))
 )
 
