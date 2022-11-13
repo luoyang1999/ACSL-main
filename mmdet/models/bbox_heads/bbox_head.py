@@ -125,6 +125,8 @@ class BBoxHead(nn.Module):
                 label_weights,
                 avg_factor=avg_factor,
                 reduction_override=reduction_override)
+            if isinstance(cls_score, list):
+                cls_score = sum(cls_score) / len(cls_score)
             losses['acc'] = accuracy(cls_score, labels)
         if bbox_pred is not None:
             pos_inds = labels > 0

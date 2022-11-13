@@ -102,7 +102,8 @@ class ClassBalancedDataset:
         self.CLASSES = dataset.CLASSES
         self.PALETTE = getattr(dataset, 'PALETTE', None)
 
-        repeat_factors = self._get_repeat_factors(dataset, oversample_thr, sample_factor)
+        repeat_factors = self._get_repeat_factors(
+            dataset, oversample_thr, sample_factor)
         repeat_indices = []
         for dataset_idx, repeat_factor in enumerate(repeat_factors):
             repeat_indices.extend([dataset_idx] * math.ceil(repeat_factor))
@@ -116,7 +117,6 @@ class ClassBalancedDataset:
         self.flag = np.asarray(flags, dtype=np.uint8)
 
         # self.img_ids = dataset.get_img_ids()
-
 
     def _get_repeat_factors(self, dataset, repeat_thr, sample_factor):
         """Get repeat factor for each images in the dataset.
@@ -141,6 +141,16 @@ class ClassBalancedDataset:
                 cat_ids = set([len(self.CLASSES)])
             for cat_id in cat_ids:
                 category_freq[cat_id] += 1
+
+        # print(category_freq.keys())
+        # category_freq_li = list()
+        # for i in range(1231):
+        #     if i in category_freq.keys():
+        #         category_freq_li.append(category_freq[i])
+        #     else:
+        #         category_freq_li.append(0)
+        # print(category_freq_li)
+
         for k, v in category_freq.items():
             category_freq[k] = v / num_images
 
@@ -182,7 +192,6 @@ class ClassBalancedDataset:
         """
         ori_index = self.repeat_indices[idx]
         return self.dataset.get_ann_info(ori_index)
- 
     def __len__(self):
         """Length after repetition."""
         return len(self.repeat_indices)
