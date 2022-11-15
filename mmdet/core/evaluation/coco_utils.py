@@ -132,7 +132,7 @@ def proposal2json(dataset, results):
     return json_results
 
 # for datawarper
-def det2json(dataset, results): 
+def det2jsonwarpper(dataset, results): 
     json_results = []
     for idx in range(len(dataset)):
         img_id = dataset.dataset.img_ids[dataset.repeat_indices[idx]]
@@ -149,21 +149,21 @@ def det2json(dataset, results):
     return json_results
 
 # for original
-# def det2json(dataset, results):
-#     json_results = []
-#     for idx in range(len(dataset)):
-#         img_id = dataset.img_ids[idx]
-#         result = results[idx]
-#         for label in range(len(result)):
-#             bboxes = result[label]
-#             for i in range(bboxes.shape[0]):
-#                 data = dict()
-#                 data['image_id'] = img_id
-#                 data['bbox'] = xyxy2xywh(bboxes[i])
-#                 data['score'] = float(bboxes[i][4])
-#                 data['category_id'] = dataset.cat_ids[label]
-#                 json_results.append(data)
-#     return json_results
+def det2json(dataset, results):
+    json_results = []
+    for idx in range(len(dataset)):
+        img_id = dataset.img_ids[idx]
+        result = results[idx]
+        for label in range(len(result)):
+            bboxes = result[label]
+            for i in range(bboxes.shape[0]):
+                data = dict()
+                data['image_id'] = img_id
+                data['bbox'] = xyxy2xywh(bboxes[i])
+                data['score'] = float(bboxes[i][4])
+                data['category_id'] = dataset.cat_ids[label]
+                json_results.append(data)
+    return json_results
 
 
 def segm2json(dataset, results):
@@ -203,10 +203,13 @@ def segm2json(dataset, results):
     return bbox_json_results, segm_json_results
 
 
-def results2json(dataset, results, out_file):
+def results2json(dataset, results, out_file, wrapper=False):
     result_files = dict()
     if isinstance(results[0], list):
-        json_results = det2json(dataset, results)
+        if wrapper:
+            json_results = det2jsonwarpper(dataset, results)
+        else:
+            json_results = det2json(dataset, results)
         result_files['bbox'] = '{}.{}.json'.format(out_file, 'bbox')
         result_files['proposal'] = '{}.{}.json'.format(out_file, 'bbox')
         mmcv.dump(json_results, result_files['bbox'])

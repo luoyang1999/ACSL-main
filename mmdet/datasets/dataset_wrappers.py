@@ -144,12 +144,15 @@ class ClassBalancedDataset:
 
         # print(category_freq.keys())
         # category_freq_li = list()
+        # without_idx = list()
         # for i in range(1231):
         #     if i in category_freq.keys():
         #         category_freq_li.append(category_freq[i])
         #     else:
         #         category_freq_li.append(0)
+        #         without_idx.append(i)
         # print(category_freq_li)
+        # print(without_idx)
 
         for k, v in category_freq.items():
             category_freq[k] = v / num_images

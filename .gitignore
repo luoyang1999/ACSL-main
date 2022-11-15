@@ -1,6 +1,9 @@
 /draw/*
 /work_dirs/*
+/test_out/*
 /data/*
 /.eggs/*
 /build/*
 *.pyc
+test_out
+work_dirs

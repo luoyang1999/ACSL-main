@@ -176,7 +176,7 @@ data = dict(
         _delete_=True,
         type='ClassBalancedDataset',
         oversample_thr=1e-3,
-        sample_factor=0.9,
+        sample_factor=0.5,
         dataset=dict(
             type=dataset_type,
             ann_file=data_root + 'lvis_v0.5_val.json',
@@ -190,9 +190,10 @@ data = dict(
     #         pipeline=test_pipeline)
 )
 
+
 # optimizer
-# frozen_layers = ['backbone', 'neck', 'rpn_head']
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+frozen_layers = []
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001, paramwise_options=dict(frozen_layers=frozen_layers))
 
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
@@ -212,12 +213,13 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 16
+total_epochs = 12
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/fixloss_reg/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainall'
+work_dir = './work_dirs/fixloss_reg/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainhead_stage2'
 # load_from = './data/pretrained_models/faster_rcnn_r50_fpn_2x_20181010-443129e1.pth'
-load_from = './data/download_models/R50-baseline.pth'
-# resume_from = 'work_dirs/baselines/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainall/latest.pth'
+# load_from = './data/pretrained_models/faster_rcnn_r50_fpn_2x_coco_bbox_mAP-0.384_20200504_210434-a5d8aa15.pth'
+load_from = './work_dirs/baselines/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainhead/latest.pth'
+resume_from = None
 evaluation = dict(interval=1, metrix='bbox')
 workflow = [('train', 1)]

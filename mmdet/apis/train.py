@@ -126,7 +126,7 @@ def build_optimizer(model, optimizer_cfg):
         for name, param in model.named_parameters():
             if name.split('.')[0] in frozen_layers:
                 param.requires_grad = False
-            print(name, param.requires_grad)
+            # print(name, param.requires_grad)
             param_group = {'params': [param]}
             if not param.requires_grad:
                 # FP16 training needs to copy gradient/weight between master

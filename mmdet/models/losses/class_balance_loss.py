@@ -25,8 +25,9 @@ class DiverseExpertLoss(nn.Module):
     def __init__(self, cls_num_list=None, reduction='mean'):
         super().__init__()
         self.cls_criterion = cross_entropy
-     
-        prior = np.array(cls_num_list) / np.sum(cls_num_list)
+
+        sum_cls = sum(cls_num_list[1:])
+        prior = np.array([0.75] + [cls_num_list[i] * 0.25 / sum_cls for i in range(1, len(cls_num_list))])
         self.reduction = reduction
         self.prior = torch.tensor(prior).float().cuda()
         self.C_number = len(cls_num_list)  # class number

@@ -202,7 +202,7 @@ class MutiExpertBBoxHead(TwoExpertBBoxHead):
             num_shared_fcs=0,
             num_cls_convs=3,
             num_cls_fcs=0,
-            num_reg_convs=0,
+            num_reg_convs=3,
             num_reg_fcs=0,
             fc_out_channels=fc_out_channels,
             *args,

@@ -229,10 +229,10 @@ def main():
             else:
                 if not isinstance(outputs[0], dict):
                     if cfg.data.test.type == 'ClassBalancedDataset':
-                        result_files = results2json(dataset, outputs, args.out)
+                        result_files = results2json(dataset, outputs, args.out, wrapper=True)
                         lvis_eval(result_files, eval_types, dataset.dataset.lvis)
                     else:
-                        result_files = results2json(dataset, outputs, args.out)
+                        result_files = results2json(dataset, outputs, args.out, wrapper=False)
                         lvis_eval(result_files, eval_types, dataset.lvis)    
                 else:
                     for name in outputs[0]:
@@ -241,10 +241,10 @@ def main():
                         result_file = args.out + '.{}'.format(name)
 
                         if cfg.data.test.type == 'ClassBalancedDataset':
-                            result_files = results2json(dataset.dataset, outputs_, result_file)
+                            result_files = results2json(dataset.dataset, outputs_, result_file, wrapper=True)
                             lvis_eval(result_files, eval_types, dataset.dataset.lvis)
                         else:
-                            result_files = results2json(dataset, outputs_, result_file)
+                            result_files = results2json(dataset, outputs_, result_file, wrapper=False)
                             lvis_eval(result_files, eval_types, dataset.lvis)
 
 
@@ -252,17 +252,17 @@ def main():
     if args.json_out and rank == 0:
         if not isinstance(outputs[0], dict):
             if cfg.data.test.type == 'ClassBalancedDataset':
-                results2json(dataset.dataset, outputs, args.json_out)
+                results2json(dataset.dataset, outputs, args.json_out, wrapper=True)
             else:
-                results2json(dataset, outputs, args.json_out)
+                results2json(dataset, outputs, args.json_out, wrapper=False)
         else:
             for name in outputs[0]:
                 outputs_ = [out[name] for out in outputs]
                 result_file = args.json_out + '.{}'.format(name)
                 if cfg.data.test.type == 'ClassBalancedDataset':
-                    results2json(dataset.dataset, outputs_, result_file)
+                    results2json(dataset.dataset, outputs_, result_file, wrapper=True)
                 else:
-                    results2json(dataset, outputs_, result_file)
+                    results2json(dataset, outputs_, result_file, wrapper=False)
 
 
 if __name__ == '__main__':
