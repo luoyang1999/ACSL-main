@@ -53,9 +53,10 @@ model = dict(
         featmap_strides=[4, 8, 16, 32]),
 
     bbox_head=dict(
-        type='MutiExpertBBoxHead',
-        num_shared_convs=2,
+        type='MutiExpertBBoxHead3',
+        num_shared_convs=1,
         num_cls_convs=2,
+        num_reg_convs=2,
         in_channels=256,
         fc_out_channels=1024,
         roi_feat_size=7,
@@ -63,8 +64,9 @@ model = dict(
         target_means=[0., 0., 0., 0.],
         target_stds=[0.1, 0.1, 0.2, 0.2],
         reg_class_agnostic=False,
+        ratio_li=[1, 1, 1],
         loss_cls=dict(
-            type='DiverseExpertLoss', cls_num_list=cls_num_list),
+            type='DiverseExpertLoss2', cls_num_list=cls_num_list),
         loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
 )
 
@@ -172,26 +174,27 @@ data = dict(
         ann_file=data_root + 'lvis_v0.5_val.json',
         img_prefix=data_root + 'val2017/',
         pipeline=test_pipeline),
+    test=dict(
+        _delete_=True,
+        type='ClassBalancedDataset',
+        oversample_thr=1e-3,
+        sample_factor=0.9,
+        dataset=dict(
+            type=dataset_type,
+            ann_file=data_root + 'lvis_v0.5_val.json',
+            img_prefix=data_root + 'val2017/',
+            test_mode = 'True',
+            pipeline=test_pipeline))
     # test=dict(
-    #     _delete_=True,
-    #     type='ClassBalancedDataset',
-    #     oversample_thr=1e-3,
-    #     sample_factor=0.9,
-    #     dataset=dict(
     #         type=dataset_type,
     #         ann_file=data_root + 'lvis_v0.5_val.json',
     #         img_prefix=data_root + 'val2017/',
-    #         test_mode = 'True',
     #         pipeline=test_pipeline)
-    test=dict(
-        type=dataset_type,
-        ann_file=data_root + 'lvis_v0.5_val.json',
-        img_prefix=data_root + 'val2017/',
-        pipeline=test_pipeline))
+)
 
 # optimizer
-frozen_layers = ['backbone', 'neck', 'rpn_head']
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001, paramwise_options=dict(frozen_layers=frozen_layers))
+# frozen_layers = ['backbone', 'neck', 'rpn_head']
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
@@ -211,10 +214,10 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 12
+total_epochs = 24
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/fixloss_reg/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainhead'
+work_dir = './work_dirs/head3/faster_rcnn_r50_fpn_1x_lr2e2_lvis_3expert_trainall'
 # load_from = './data/pretrained_models/faster_rcnn_r50_fpn_2x_20181010-443129e1.pth'
 load_from = './data/download_models/R50-baseline.pth'
 resume_from = None

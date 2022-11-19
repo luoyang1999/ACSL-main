@@ -63,6 +63,7 @@ model = dict(
         target_means=[0., 0., 0., 0.],
         target_stds=[0.1, 0.1, 0.2, 0.2],
         reg_class_agnostic=False,
+        ratio_li=[1, 0],    # [1, 0]只有第一个头，[0, 1]只有第二个头
         loss_cls=dict(
             type='DiverseExpertLoss', cls_num_list=cls_num_list),
         loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
@@ -172,22 +173,22 @@ data = dict(
         ann_file=data_root + 'lvis_v0.5_val.json',
         img_prefix=data_root + 'val2017/',
         pipeline=test_pipeline),
-    test=dict(
-        _delete_=True,
-        type='ClassBalancedDataset',
-        oversample_thr=1e-3,
-        sample_factor=0.5,
-        dataset=dict(
-            type=dataset_type,
-            ann_file=data_root + 'lvis_v0.5_val.json',
-            img_prefix=data_root + 'val2017/',
-            test_mode = 'True',
-            pipeline=test_pipeline))
     # test=dict(
+    #     _delete_=True,
+    #     type='ClassBalancedDataset',
+    #     oversample_thr=1e-3,
+    #     sample_factor=0.5,
+    #     dataset=dict(
     #         type=dataset_type,
     #         ann_file=data_root + 'lvis_v0.5_val.json',
     #         img_prefix=data_root + 'val2017/',
-    #         pipeline=test_pipeline)
+    #         test_mode = 'True',
+    #         pipeline=test_pipeline))
+    test=dict(
+            type=dataset_type,
+            ann_file=data_root + 'lvis_v0.5_val.json',
+            img_prefix=data_root + 'val2017/',
+            pipeline=test_pipeline)
 )
 
 
@@ -219,7 +220,7 @@ log_level = 'INFO'
 work_dir = './work_dirs/fixloss_reg/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainhead_stage2'
 # load_from = './data/pretrained_models/faster_rcnn_r50_fpn_2x_20181010-443129e1.pth'
 # load_from = './data/pretrained_models/faster_rcnn_r50_fpn_2x_coco_bbox_mAP-0.384_20200504_210434-a5d8aa15.pth'
-load_from = './work_dirs/baselines/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainhead/latest.pth'
+load_from = './work_dirs/fixloss_reg/faster_rcnn_r50_fpn_1x_lr2e2_lvis_2expert_trainhead/latest.pth'
 resume_from = None
 evaluation = dict(interval=1, metrix='bbox')
 workflow = [('train', 1)]

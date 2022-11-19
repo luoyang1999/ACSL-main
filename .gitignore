@@ -1,9 +1,8 @@
 /draw/*
-/work_dirs/*
-/test_out/*
-/data/*
 /.eggs/*
 /build/*
 *.pyc
+data
 test_out
 work_dirs
+mmdet.egg-info
