@@ -219,6 +219,6 @@ log_level = 'INFO'
 work_dir = './work_dirs/head3/faster_rcnn_r50_fpn_1x_lr2e2_lvis_3expert_trainhead'
 # load_from = './data/pretrained_models/faster_rcnn_r50_fpn_2x_20181010-443129e1.pth'
 load_from = './data/download_models/R50-baseline.pth'
-resume_from = None
+resume_from = 'work_dirs/head3/faster_rcnn_r50_fpn_1x_lr2e2_lvis_3expert_trainhead/epoch_6.pth'
 evaluation = dict(interval=1, metrix='bbox')
 workflow = [('train', 1)]

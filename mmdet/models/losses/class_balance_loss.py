@@ -71,11 +71,14 @@ class DiverseExpertLoss2(nn.Module):
         self.C_number = len(cls_num_list)  # class number
         self.tau = tau 
 
-    def inverse_prior(self, prior): 
-        value, idx0 = torch.sort(prior)
+    def inverse_prior(self, prior):
+        back=prior[:1] 
+        value, idx0 = torch.sort(prior[1:])
         _, idx1 = torch.sort(idx0)
-        idx2 = prior.shape[0]-1-idx1 # reverse the order
+        idx2 = prior[1:].shape[0]-1-idx1 # reverse the order
         inverse_prior = value.index_select(0,idx2)
+        inverse_prior=torch.cat((back,inverse_prior),dim=0)
+
         
         return inverse_prior
 
