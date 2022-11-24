@@ -1,9 +1,11 @@
 from __future__ import division
 import argparse
 import os
-
+from mmcv.runner import DistSamplerSeedHook, Runner, obj_from_dict
+from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 import torch
 from mmcv import Config
+import torch.nn.functional as F
 
 from mmdet import __version__
 from mmdet.apis import (get_root_logger, init_dist, set_random_seed,
@@ -12,6 +14,7 @@ from mmdet.datasets import build_dataset
 from mmdet.models import build_detector
 
 import warnings
+from mmdet.datasets import DATASETS, build_dataloader
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
@@ -159,13 +162,77 @@ def main():
     else:
         print('Train all params.')
 
-    train_detector(
-        model,
-        datasets,
-        cfg,
-        distributed=distributed,
-        validate=args.validate,
-        logger=logger)
+
+
+
+    dataset = datasets if isinstance(datasets, (list, tuple)) else [datasets]
+    data_loaders = [
+        build_dataloader(
+            ds,
+            cfg.data.imgs_per_gpu,
+            cfg.data.workers_per_gpu,
+            cfg.gpus,
+            dist=False) for ds in dataset
+    ]
+    # put model on gpus
+
+    
+    logger.info('Loading checkpoint: {} ...'.format(cfg.load_from))
+    checkpoint = torch.load(cfg.load_from)
+    state_dict = checkpoint['state_dict']
+    model.load_state_dict(state_dict)
+    for param in model.parameters():
+        param.requires_grad=False
+    model = MMDataParallel(model, device_ids=range(cfg.gpus)).cuda()
+    model.eval()
+    aggregation_weight = torch.nn.Parameter(torch.FloatTensor(3), requires_grad=True)
+    aggregation_weight.data.fill_(1/3) 
+    cos = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
+
+    optimizer = torch.optim.SGD([aggregation_weight], lr=0.02, momentum=0.9, weight_decay=0.0001)
+
+    for epoch in range(12):
+        for i, data_batch in enumerate(data_loaders[0]):
+            
+          
+            cls_scores0 = model(**data_batch[0])
+            cls_scores1 = model(**data_batch[1])
+            expert1_logits_output0 = cls_scores0[0]
+            expert2_logits_output0 = cls_scores0[1]
+            expert3_logits_output0 = cls_scores0[2]
+            expert1_logits_output1 = cls_scores1[0]
+            expert2_logits_output1 = cls_scores1[1]
+            expert3_logits_output1 = cls_scores1[2]
+
+            aggregation_softmax = torch.nn.functional.softmax(aggregation_weight) # softmax for normalization
+            aggregation_output0 = aggregation_softmax[0].cuda() * expert1_logits_output0 + aggregation_softmax[1].cuda() * expert2_logits_output0 + aggregation_softmax[2].cuda() * expert3_logits_output0
+            aggregation_output1 = aggregation_softmax[0].cuda() * expert1_logits_output1 + aggregation_softmax[1].cuda() * expert2_logits_output1 + aggregation_softmax[2].cuda() * expert3_logits_output1
+            softmax_aggregation_output0 = F.softmax(aggregation_output0, dim=1) 
+            softmax_aggregation_output1 = F.softmax(aggregation_output1, dim=1)
+        
+        # SSL loss: similarity maxmization
+            cos_similarity = cos(softmax_aggregation_output0, softmax_aggregation_output1).mean()
+            ssl_loss =  cos_similarity
+        
+        # Entropy regularizer: entropy maxmization
+            loss =  -ssl_loss 
+        
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            if i%10==0:
+                print("Aggregation weight: Expert 1 is {0:.2f}, Expert 2 is {1:.2f}, Expert 3 is {2:.2f}".format(aggregation_weight[0], aggregation_weight[1], aggregation_weight[2]))
+
+
+
+    # train_detector(
+    #     model,
+    #     datasets,
+    #     cfg,
+    #     distributed=distributed,
+    #     validate=args.validate,
+    #     logger=logger)
 
 
 if __name__ == '__main__':

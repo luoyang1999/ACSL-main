@@ -139,6 +139,9 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
+    dict(type="ColorJitter",param=(0.4, 0.4, 0.4, 0.1),p=0.8),
+    dict(type='Grayscale',p=0.2),
+    dict(type='GaussianBlur',p=0.5),
     dict(type='Resize', img_scale=(1333, 800), keep_ratio=True),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -166,8 +169,8 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'lvis_v0.5_train.json',
-        img_prefix=data_root + 'train2017/',
+        ann_file=data_root + 'lvis_v0.5_val.json',
+        img_prefix=data_root + 'val2017/',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
@@ -218,7 +221,7 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/head3/faster_rcnn_r50_fpn_1x_lr2e2_lvis_3expert_trainhead'
 # load_from = './data/pretrained_models/faster_rcnn_r50_fpn_2x_20181010-443129e1.pth'
-load_from = './data/download_models/R50-baseline.pth'
-resume_from = 'work_dirs/head3/faster_rcnn_r50_fpn_1x_lr2e2_lvis_3expert_trainhead/epoch_6.pth'
+load_from ='checkpoint/epoch_12.pth' #None#'./data/download_models/R50-baseline.pth'
+resume_from = None#'work_dirs/head3/faster_rcnn_r50_fpn_1x_lr2e2_lvis_3expert_trainhead/epoch_6.pth'
 evaluation = dict(interval=1, metrix='bbox')
 workflow = [('train', 1)]

@@ -125,11 +125,12 @@ class CustomDataset(Dataset):
         if self.test_mode:
             return self.prepare_test_img(idx)
         while True:
-            data = self.prepare_train_img(idx)
-            if data is None:
+            data0 = self.prepare_train_img(idx)
+            data1 = self.prepare_train_img(idx)
+            if data0 is None:
                 idx = self._rand_another(idx)
                 continue
-            return data
+            return (data0,data1)
 
     def prepare_train_img(self, idx):
         img_info = self.img_infos[idx]

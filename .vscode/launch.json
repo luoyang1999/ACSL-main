@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["configs/baselines/faster_rcnn_r50_fpn_1x_lvis.py"]
+            "args": ["configs/multiexpert/version3/faster_rcnn_r50_fpn_1x_3expert_lvis_trainhead.py"]
         }
     ]
 }

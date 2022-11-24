@@ -6,11 +6,11 @@ import numpy as np
 from albumentations import Compose
 from imagecorruptions import corrupt
 from numpy import random
-
+from PIL import Image
 from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
 from ..registry import PIPELINES
-
-
+from torchvision import datasets, transforms
+from PIL import ImageFilter 
 @PIPELINES.register_module
 class Resize(object):
     """Resize images & bbox & mask.
@@ -218,9 +218,61 @@ class RandomFlip(object):
         return self.__class__.__name__ + '(flip_ratio={})'.format(
             self.flip_ratio)
 
+@PIPELINES.register_module
+class ColorJitter(object):
+    def __init__(self,param,p):
+        self.p=p
+        self.param=param
+        self.transform=transforms.RandomApply([
+                transforms.ColorJitter(*self.param)  
+            ], p=self.p)
+    def __call__(self, results):
+        results['img']=Image.fromarray(np.uint8(results['img']))  
+        
+        results['img']=self.transform(results['img'])
+        results['img']=np.array(results['img'])
+        
+
+        return results
+class GaussianBlurx(object):
+    """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709"""
+
+    def __init__(self, sigma=[.1, 2.]):
+        self.sigma = sigma
+
+    def __call__(self, x):
+        sigma = random.uniform(self.sigma[0], self.sigma[1])
+        x = x.filter(ImageFilter.GaussianBlur(radius=sigma))
+        return x
 
 @PIPELINES.register_module
+class GaussianBlur(object):
+    def __init__(self,p):
+        self.p=p
+        self.transform=transforms.RandomApply([GaussianBlurx([.1, 2.])], p=self.p)
+        
+    def __call__(self, results):
+        results['img']=Image.fromarray(np.uint8(results['img']))
+        results['img']=self.transform(results['img'])
+        results['img']=np.array(results['img'])
+
+        return results
+
+@PIPELINES.register_module
+class Grayscale(object):
+    def __init__(self,p):
+        self.p=p
+        self.transform=transforms.RandomGrayscale(p=self.p)
+    def __call__(self, results):
+        results['img']=Image.fromarray(np.uint8(results['img']))
+        results['img']=self.transform(results['img'])
+        results['img']=np.array(results['img'])
+
+        return results
+        
+@PIPELINES.register_module
 class Pad(object):
+    
     """Pad the image & mask.
 
     There are two padding modes: (1) pad to a fixed size and (2) pad to the
